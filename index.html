@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Casino">
+<meta name="theme-color" content="#173f30">
+<title>Casino Score</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,500..800&family=Karla:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --felt:#246249; --felt-deep:#173f30;
+  --paper:#f6f0e1; --paper-hi:#fffaf0; --paper-2:#e9e1cc; --edge:#d6cbb2;
+  --ink:#1d1b17; --red:#b3222e;
+  --brass:#d9b66d; --brass-ink:#2b1f07;
+  --on-felt:#f1ead6; --on-felt-2:rgba(241,234,214,.64); --line-felt:rgba(241,234,214,.16);
+  --card-shadow:0 1px 0 rgba(255,255,255,.55) inset, 0 12px 26px rgba(0,0,0,.28), 0 2px 5px rgba(0,0,0,.22);
+  --lead-shadow:0 1px 0 rgba(255,255,255,.55) inset, 0 22px 38px rgba(0,0,0,.34), 0 4px 8px rgba(0,0,0,.22);
+  --serif:'Bodoni Moda','Bodoni 72',Didot,Georgia,serif;
+  --sans:'Karla',-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
+  --noise:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.2'/%3E%3C/svg%3E");
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --felt:#133b2d; --felt-deep:#0b241b;
+    --paper:#e5dece; --paper-hi:#efe9da; --paper-2:#d5ccb6; --edge:#bfb49a;
+    --brass:#c9a55c; --on-felt:#e7e0cc; --on-felt-2:rgba(231,224,204,.6); --line-felt:rgba(231,224,204,.14);
+    --card-shadow:0 1px 0 rgba(255,255,255,.35) inset, 0 12px 28px rgba(0,0,0,.5), 0 2px 5px rgba(0,0,0,.4);
+    --lead-shadow:0 1px 0 rgba(255,255,255,.35) inset, 0 22px 40px rgba(0,0,0,.55), 0 4px 8px rgba(0,0,0,.4);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --felt:#133b2d; --felt-deep:#0b241b;
+  --paper:#e5dece; --paper-hi:#efe9da; --paper-2:#d5ccb6; --edge:#bfb49a;
+  --brass:#c9a55c; --on-felt:#e7e0cc; --on-felt-2:rgba(231,224,204,.6); --line-felt:rgba(231,224,204,.14);
+  --card-shadow:0 1px 0 rgba(255,255,255,.35) inset, 0 12px 28px rgba(0,0,0,.5), 0 2px 5px rgba(0,0,0,.4);
+  --lead-shadow:0 1px 0 rgba(255,255,255,.35) inset, 0 22px 40px rgba(0,0,0,.55), 0 4px 8px rgba(0,0,0,.4);
+  color-scheme:dark;
+}
+
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+[hidden]{display:none!important}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;min-height:100dvh;background-color:var(--felt-deep);color:var(--on-felt);font-family:var(--sans);overscroll-behavior-y:none}
+body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background-image:var(--noise),radial-gradient(130% 90% at 50% 8%,var(--felt) 0%,var(--felt-deep) 80%)}
+body.lock{overflow:hidden}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;touch-action:manipulation;-webkit-user-select:none;user-select:none}
+button:disabled{cursor:default}
+button:focus-visible,input:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
+.su{font-style:normal}
+
+/* layout */
+.app{max-width:480px;margin:0 auto;padding:calc(env(safe-area-inset-top) + 14px) 20px calc(env(safe-area-inset-bottom) + 118px)}
+.top{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px}
+h1{font-family:var(--serif);font-weight:700;font-size:34px;line-height:1;margin:0;letter-spacing:.005em}
+.chip{height:38px;padding:0 15px;border-radius:999px;border:1px solid var(--line-felt);background:rgba(0,0,0,.14);font-weight:600;font-size:15px}
+.chip:active{background:rgba(0,0,0,.26)}
+
+/* score cards */
+.board{display:grid;grid-template-columns:1fr 1fr;gap:14px;padding-top:6px}
+.pcard{--pc:var(--ink);position:relative;aspect-ratio:5/7;background:var(--paper);border-radius:14px;box-shadow:var(--card-shadow);
+  color:var(--pc);display:flex;flex-direction:column;align-items:center;padding:16px 12px 18px;
+  transition:transform .4s cubic-bezier(.2,.8,.2,1),box-shadow .4s;animation:deal .55s cubic-bezier(.2,.85,.25,1.1) both}
+.pcard[data-p="0"]{transform:rotate(-.6deg)}
+.pcard[data-p="1"]{--pc:var(--red);transform:rotate(.8deg);animation-delay:.12s}
+.pcard[data-p="0"].lead{transform:translateY(-7px) rotate(-1.6deg);box-shadow:var(--lead-shadow)}
+.pcard[data-p="1"].lead{transform:translateY(-7px) rotate(1.8deg);box-shadow:var(--lead-shadow)}
+.pcard::after{content:"";position:absolute;inset:6px;border:1px solid var(--edge);border-radius:10px;pointer-events:none}
+.pcard.won::after{border:2px solid var(--brass)}
+@keyframes deal{from{opacity:0;transform:translateY(-34px) rotate(-7deg)}}
+.idx{position:absolute;display:flex;flex-direction:column;align-items:center;line-height:.95;font-family:var(--serif);font-weight:700;font-size:19px;font-variant-numeric:lining-nums}
+.idx .su{font-size:15px;margin-top:2px}
+.tl{top:12px;left:12px}
+.br{bottom:12px;right:12px;transform:rotate(180deg)}
+.name{width:100%;padding:2px 26px 3px;background:transparent;border:0;border-bottom:1px dashed transparent;border-radius:0;
+  color:var(--pc);font:700 17px/1.2 var(--sans);text-align:center;text-overflow:ellipsis;-webkit-appearance:none;appearance:none}
+.name:focus{outline:none;border-bottom-color:color-mix(in srgb,var(--pc) 45%,transparent)}
+.big{margin:auto 0;font-family:var(--serif);font-weight:600;font-size:clamp(76px,25vw,112px);line-height:1;font-variant-numeric:lining-nums;letter-spacing:-.01em}
+.big.pop{animation:pop .45s cubic-bezier(.2,.8,.2,1)}
+@keyframes pop{40%{transform:scale(1.13)}}
+.track{width:78%;height:4px;border-radius:2px;background:color-mix(in srgb,var(--pc) 13%,transparent);overflow:hidden}
+.track span{display:block;height:100%;width:0;background:var(--pc);border-radius:2px;transition:width .5s cubic-bezier(.2,.8,.2,1)}
+.togo{min-height:17px;margin-top:8px;font-size:13.5px;font-weight:500;color:color-mix(in srgb,var(--pc) 72%,var(--paper))}
+
+/* status */
+.status{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:22px 2px 28px;font-size:15px;color:var(--on-felt-2);min-height:32px}
+.status b{color:var(--on-felt);font-weight:700}
+.swap{margin-left:8px;padding:5px 11px;border-radius:999px;border:1px solid var(--line-felt);font-size:13px;font-weight:600;color:var(--on-felt)}
+.wins{white-space:nowrap;font-variant-numeric:tabular-nums}
+
+/* history */
+.hist-head{display:flex;justify-content:space-between;align-items:baseline;padding-bottom:6px}
+.hist-head h2{font-family:var(--serif);font-weight:600;font-size:23px;margin:0}
+.undo{font-size:15px;font-weight:600;color:var(--brass);padding:6px 0}
+.undo:disabled{opacity:.3}
+.cols,.hrow{display:grid;grid-template-columns:44px 1fr 1fr 62px;align-items:center}
+.cols{font-size:13px;color:var(--on-felt-2);padding:10px 0 6px;border-bottom:1px solid var(--line-felt)}
+.cols span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-right:6px}
+.cols .r{text-align:right;padding-right:0}
+#histList{list-style:none;margin:0;padding:0}
+.hrow{width:100%;min-height:50px;border-bottom:1px solid var(--line-felt);text-align:left;font-variant-numeric:tabular-nums}
+.hrow:active{background:rgba(0,0,0,.14)}
+.hn{font-family:var(--serif);font-size:18px;color:var(--on-felt-2)}
+.hp{font-size:17px;font-weight:600}
+.hp small{font-size:12px;font-weight:500;color:var(--on-felt-2);margin-left:5px}
+.hr{text-align:right;color:var(--on-felt-2);font-size:15px}
+.empty{color:var(--on-felt-2);font-size:15px;line-height:1.5;padding:14px 0;margin:0;border-top:1px solid var(--line-felt)}
+
+/* dock */
+.dock{position:fixed;left:0;right:0;bottom:0;z-index:10;padding:16px 20px calc(env(safe-area-inset-bottom) + 14px);
+  background:linear-gradient(to bottom,transparent,var(--felt-deep) 42%)}
+.dock .primary{display:block;max-width:440px;margin:0 auto}
+.primary{width:100%;height:56px;border-radius:16px;background:var(--brass);color:var(--brass-ink);font-weight:700;font-size:18px;
+  box-shadow:0 1px 0 rgba(255,255,255,.4) inset,0 6px 16px rgba(0,0,0,.28)}
+.primary:active{filter:brightness(.93)}
+.primary:disabled{background:var(--paper-2);color:color-mix(in srgb,var(--ink) 50%,transparent);box-shadow:none}
+
+/* sheets */
+.scrim{position:fixed;inset:0;z-index:20;background:rgba(4,14,10,.5);opacity:0;pointer-events:none;transition:opacity .28s}
+.scrim.show{opacity:1;pointer-events:auto}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:30;margin:0 auto;max-width:520px;max-height:calc(100dvh - env(safe-area-inset-top) - 14px);
+  display:flex;flex-direction:column;background:var(--paper);color:var(--ink);border-radius:22px 22px 0 0;
+  box-shadow:0 -10px 40px rgba(0,0,0,.35);transform:translateY(106%);visibility:hidden;
+  transition:transform .34s cubic-bezier(.2,.85,.25,1),visibility 0s .34s}
+.sheet.open{transform:none;visibility:visible;transition:transform .34s cubic-bezier(.2,.85,.25,1),visibility 0s}
+.drag{flex:none;touch-action:none}
+.grab{width:40px;height:5px;border-radius:3px;background:var(--edge);margin:8px auto 0}
+.sh-head{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:6px 16px 4px;min-height:48px}
+.sh-head h2{font-family:var(--serif);font-weight:700;font-size:23px;margin:0;text-align:center}
+.txt{font-size:16px;font-weight:600;padding:8px 0;justify-self:start;color:color-mix(in srgb,var(--ink) 70%,transparent)}
+.txt.end{justify-self:end}
+.txt.strong{color:var(--ink);font-weight:700}
+.txt.danger{color:var(--red)}
+.tally{display:grid;grid-template-columns:1fr 1fr;padding:6px 16px 10px;border-bottom:1px solid var(--edge)}
+.t{display:flex;flex-direction:column;min-width:0}
+.t.p1{align-items:flex-end;color:var(--red)}
+.t.p0{color:var(--ink)}
+.tn{font-size:14px;font-weight:700;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.t b{font-family:var(--serif);font-size:32px;line-height:1.05;font-weight:600;font-variant-numeric:lining-nums}
+.rows{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding:4px 0}
+.row{display:grid;grid-template-columns:1fr minmax(142px,1.5fr) 1fr;gap:8px;align-items:stretch;padding:6px 16px;min-height:60px}
+.row+.row{border-top:1px solid color-mix(in srgb,var(--edge) 60%,transparent)}
+.s0{--sc:var(--ink)} .s1{--sc:var(--red)}
+.side{border-radius:12px;border:1.5px dashed color-mix(in srgb,var(--sc) 32%,transparent);color:color-mix(in srgb,var(--sc) 38%,transparent);
+  font-weight:700;font-size:17px;min-height:48px;transition:background .15s,opacity .15s,color .15s}
+.side[aria-pressed="true"]{background:var(--sc);border:1.5px solid var(--sc);color:var(--paper-hi)}
+.row.decided .side[aria-pressed="false"]{opacity:.32}
+.mid{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:2px;min-width:0}
+.lbl{display:flex;align-items:center;gap:6px;font-weight:600;font-size:15px;color:var(--ink);white-space:nowrap}
+.mini{display:inline-flex;align-items:center;justify-content:center;min-width:32px;height:23px;padding:0 5px;border:1px solid var(--edge);border-radius:5px;
+  background:var(--paper-hi);font-family:var(--serif);font-weight:700;font-size:14px;color:var(--ink);font-variant-numeric:lining-nums}
+.mini.red{color:var(--red)}
+.pts{font-size:12.5px;color:color-mix(in srgb,var(--ink) 55%,transparent)}
+.tie{margin-top:5px;padding:4px 12px;border-radius:999px;border:1px solid var(--edge);font-size:13px;font-weight:600}
+.tie[aria-pressed="true"]{background:var(--brass);border-color:var(--brass);color:var(--brass-ink)}
+.step{display:flex;align-items:center;justify-content:space-between;border-radius:12px;background:color-mix(in srgb,var(--sc) 7%,transparent);color:var(--sc);padding:0 2px}
+.step button{width:40px;height:48px;font-size:24px;font-weight:500;border-radius:10px}
+.step button:active{background:color-mix(in srgb,var(--sc) 12%,transparent)}
+.step button:disabled{opacity:.25}
+.mini .suits{font-size:11px;margin-left:2px;letter-spacing:-.5px}
+.mini .suits i{font-style:normal;color:var(--red)}
+#aceRow.pending #aceNote{color:var(--red)}
+.step b{font-family:var(--serif);font-size:24px;font-weight:600;font-variant-numeric:lining-nums}
+.sh-foot{flex:none;padding:12px 16px calc(env(safe-area-inset-bottom) + 12px);border-top:1px solid var(--edge)}
+
+/* settings */
+.set-body{overflow-y:auto;padding:8px 20px 4px}
+.field{padding:14px 0;border-bottom:1px solid color-mix(in srgb,var(--edge) 70%,transparent)}
+.flabel{display:block;font-size:14px;font-weight:700;margin-bottom:10px}
+.fnote{font-size:13px;color:color-mix(in srgb,var(--ink) 58%,transparent);margin:8px 0 0;line-height:1.45}
+.target-row{display:flex;gap:12px;align-items:center}
+.seg{display:flex;flex:1;background:var(--paper-2);border-radius:12px;padding:3px;gap:3px}
+.seg button{flex:1;height:42px;border-radius:9px;font-weight:600;font-size:15px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 8px}
+.seg button[aria-pressed="true"]{background:var(--paper-hi);box-shadow:0 1px 3px rgba(0,0,0,.14)}
+.stepper{display:flex;align-items:center;background:var(--paper-2);border-radius:12px;padding:3px}
+.stepper button{width:42px;height:42px;font-size:22px;border-radius:9px}
+.stepper button:active{background:var(--paper-hi)}
+.stepper b{min-width:40px;text-align:center;font-family:var(--serif);font-size:22px;font-variant-numeric:lining-nums}
+.wins-row{display:flex;justify-content:space-between;align-items:center;font-size:15.5px}
+.wins-row .txt{padding:4px 0}
+.danger-btn{width:100%;height:50px;margin:18px 0 6px;border-radius:14px;border:1.5px solid color-mix(in srgb,var(--red) 55%,transparent);color:var(--red);font-weight:700;font-size:16px}
+.danger-btn:disabled{opacity:.35}
+
+/* win */
+.win{position:fixed;inset:0;z-index:40;display:none;flex-direction:column;align-items:center;justify-content:center;gap:24px;
+  padding:calc(env(safe-area-inset-top) + 20px) 24px calc(env(safe-area-inset-bottom) + 20px);background:rgba(5,18,13,.74);-webkit-backdrop-filter:blur(5px);backdrop-filter:blur(5px)}
+.win.show{display:flex}
+.wincard{--pc:var(--ink);position:relative;width:min(70vw,270px);aspect-ratio:5/7;background:var(--paper);border-radius:18px;box-shadow:var(--lead-shadow);
+  color:var(--pc);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;animation:winIn .65s cubic-bezier(.2,.9,.25,1.12) both}
+.wincard::after{content:"";position:absolute;inset:7px;border:2px solid var(--brass);border-radius:12px;pointer-events:none}
+.wincard .idx{font-size:22px}
+@keyframes winIn{from{opacity:0;transform:translateY(70px) rotate(-12deg) scale(.85)}}
+#winName{font-family:var(--serif);font-weight:700;font-size:38px;line-height:1.05;margin:0;max-width:100%;overflow-wrap:anywhere}
+.wsub{font-size:16px;font-weight:500;margin:4px 0 16px;opacity:.72}
+.wscore{font-family:var(--serif);font-weight:600;font-size:54px;line-height:1;margin:0;font-variant-numeric:lining-nums}
+.winacts{display:flex;flex-direction:column;gap:10px;width:min(86vw,340px)}
+.ghost{height:48px;border-radius:14px;border:1px solid var(--line-felt);color:var(--on-felt);font-weight:600;font-size:16px}
+.ghost:active{background:rgba(255,255,255,.06)}
+
+/* setup */
+.setup{position:fixed;inset:0;z-index:35;display:none;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;
+  background-color:var(--felt-deep);background-image:var(--noise),radial-gradient(130% 90% at 50% 8%,var(--felt) 0%,var(--felt-deep) 80%)}
+.setup.show{display:block}
+.setup-in{max-width:440px;margin:0 auto;padding:calc(env(safe-area-inset-top) + 14px) 20px calc(env(safe-area-inset-bottom) + 24px);display:flex;flex-direction:column;gap:22px}
+.setup-card{position:relative;background:var(--paper);color:var(--ink);border-radius:18px;box-shadow:var(--card-shadow);padding:22px 22px 6px;animation:deal .55s cubic-bezier(.2,.85,.25,1.1) both}
+.setup-card::after{content:"";position:absolute;inset:7px;border:1px solid var(--edge);border-radius:12px;pointer-events:none}
+.setup-card h2{font-family:var(--serif);font-weight:700;font-size:27px;margin:0 0 6px}
+.pfield{position:relative;z-index:1;display:block;padding:12px 0 6px}
+.plabel{display:flex;align-items:center;gap:6px;font-size:13.5px;font-weight:700;color:var(--sc)}
+.pfield input{width:100%;margin-top:4px;padding:8px 0 9px;border:0;border-bottom:1.5px solid color-mix(in srgb,var(--sc) 30%,transparent);border-radius:0;
+  background:transparent;color:var(--sc);font:700 21px/1.2 var(--sans);-webkit-appearance:none;appearance:none}
+.pfield input::placeholder{color:color-mix(in srgb,var(--sc) 32%,transparent);font-weight:600}
+.pfield input:focus{outline:none;border-bottom-color:var(--sc)}
+.setup-card .field{position:relative;z-index:1}
+.setup-card .field:last-child{border-bottom:0}
+.setup-card .field:first-of-type{margin-top:8px}
+
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<main class="app">
+  <header class="top">
+    <h1>Casino</h1>
+    <button class="chip" id="settingsBtn" aria-label="Game settings">Game to <span id="targetLabel">21</span></button>
+  </header>
+
+  <section class="board" aria-label="Scores">
+    <article class="pcard" data-p="0">
+      <span class="idx tl" aria-hidden="true"><b class="idx-n">0</b><i class="su">&#x2660;&#xFE0E;</i></span>
+      <span class="idx br" aria-hidden="true"><b class="idx-n">0</b><i class="su">&#x2660;&#xFE0E;</i></span>
+      <input class="name" data-p="0" maxlength="14" autocomplete="off" autocorrect="off" spellcheck="false" enterkeyhint="done" aria-label="Player 1 name">
+      <div class="big" aria-live="polite">0</div>
+      <div class="track"><span></span></div>
+      <div class="togo"></div>
+    </article>
+    <article class="pcard" data-p="1">
+      <span class="idx tl" aria-hidden="true"><b class="idx-n">0</b><i class="su">&#x2666;&#xFE0E;</i></span>
+      <span class="idx br" aria-hidden="true"><b class="idx-n">0</b><i class="su">&#x2666;&#xFE0E;</i></span>
+      <input class="name" data-p="1" maxlength="14" autocomplete="off" autocorrect="off" spellcheck="false" enterkeyhint="done" aria-label="Player 2 name">
+      <div class="big" aria-live="polite">0</div>
+      <div class="track"><span></span></div>
+      <div class="togo"></div>
+    </article>
+  </section>
+
+  <div class="status">
+    <span><span id="statusL"></span><button class="swap" id="swapBtn">Swap</button></span>
+    <span class="wins" id="winsLbl"></span>
+  </div>
+
+  <section>
+    <div class="hist-head">
+      <h2>Deals</h2>
+      <button class="undo" id="undoBtn">Undo last</button>
+    </div>
+    <div class="cols" id="cols"><span>Deal</span><span id="c0"></span><span id="c1"></span><span class="r">Total</span></div>
+    <ol id="histList"></ol>
+    <p class="empty" id="empty">No deals yet. Play through the whole deck, then tap below to score it.</p>
+  </section>
+</main>
+
+<div class="dock"><button class="primary" id="scoreBtn">Score deal 1</button></div>
+
+<div class="scrim" id="scrim"></div>
+
+<section class="sheet" id="dealSheet" role="dialog" aria-modal="true" aria-labelledby="dealTitle">
+  <div class="drag">
+    <div class="grab"></div>
+    <header class="sh-head">
+      <button class="txt" id="dealCancel">Cancel</button>
+      <h2 id="dealTitle">Deal 1</h2>
+      <button class="txt danger end" id="dealDelete">Delete</button>
+    </header>
+  </div>
+  <div class="tally">
+    <div class="t p0"><span class="tn" id="tn0"></span><b id="tally0">+0</b></div>
+    <div class="t p1"><span class="tn" id="tn1"></span><b id="tally1">+0</b></div>
+  </div>
+  <div class="rows" id="rows"></div>
+  <footer class="sh-foot"><button class="primary" id="dealSave" disabled>Save deal</button></footer>
+</section>
+
+<section class="sheet" id="setSheet" role="dialog" aria-modal="true" aria-labelledby="setTitle">
+  <div class="drag">
+    <div class="grab"></div>
+    <header class="sh-head">
+      <span></span>
+      <h2 id="setTitle">Settings</h2>
+      <button class="txt strong end" id="setDone">Done</button>
+    </header>
+  </div>
+  <div class="set-body">
+    <div class="field">
+      <span class="flabel">Play to</span>
+      <div class="target-row">
+        <div class="seg" id="quickTarget"><button data-t="11">11</button><button data-t="21">21</button></div>
+        <div class="stepper"><button id="tMinus" aria-label="Lower target">&minus;</button><b id="tVal">21</b><button id="tPlus" aria-label="Raise target">+</button></div>
+      </div>
+      <p class="fnote">If both players pass the target on the same deal, the higher total wins. An exact tie plays another deal.</p>
+    </div>
+    <div class="field">
+      <span class="flabel">Dealer for deal 1 of this game</span>
+      <div class="seg" id="dealerSeg"><button data-p="0"></button><button data-p="1"></button></div>
+      <p class="fnote">The deal alternates after that, and carries over into the next game.</p>
+    </div>
+    <div class="field">
+      <span class="flabel">Games won</span>
+      <div class="wins-row"><span id="winsDetail"></span><button class="txt danger" id="resetWins">Reset</button></div>
+    </div>
+    <button class="danger-btn" id="newGameSet">Start a new game</button>
+  </div>
+  <div class="sh-foot" style="border:0;padding-top:0"></div>
+</section>
+
+<div class="setup" id="setup" role="dialog" aria-modal="true" aria-labelledby="setupTitle">
+  <div class="setup-in">
+    <div class="top" style="margin-bottom:0"><h1>Casino</h1></div>
+    <div class="setup-card">
+      <h2 id="setupTitle">New game</h2>
+      <label class="pfield s0"><span class="plabel"><i class="su">&#x2660;&#xFE0E;</i>Player 1</span>
+        <input id="n0" maxlength="14" placeholder="Enter a name" autocomplete="off" autocorrect="off" autocapitalize="words" spellcheck="false" enterkeyhint="next"></label>
+      <label class="pfield s1"><span class="plabel"><i class="su">&#x2666;&#xFE0E;</i>Player 2</span>
+        <input id="n1" maxlength="14" placeholder="Enter a name" autocomplete="off" autocorrect="off" autocapitalize="words" spellcheck="false" enterkeyhint="done"></label>
+      <div class="field">
+        <span class="flabel">Deals first</span>
+        <div class="seg" id="suDealer"><button data-p="0"></button><button data-p="1"></button></div>
+      </div>
+      <div class="field">
+        <span class="flabel">Play to</span>
+        <div class="target-row">
+          <div class="seg" id="suQuick"><button data-t="11">11</button><button data-t="21">21</button></div>
+          <div class="stepper"><button id="suMinus" aria-label="Lower target">&minus;</button><b id="suVal">21</b><button id="suPlus" aria-label="Raise target">+</button></div>
+        </div>
+      </div>
+    </div>
+    <button class="primary" id="startBtn">Start game</button>
+  </div>
+</div>
+
+<div class="win" id="win" role="dialog" aria-modal="true" aria-labelledby="winName">
+  <div class="wincard" id="wincard">
+    <span class="idx tl" aria-hidden="true"><b id="winIdx1">0</b><i class="su" id="winSu1"></i></span>
+    <span class="idx br" aria-hidden="true"><b id="winIdx2">0</b><i class="su" id="winSu2"></i></span>
+    <h2 id="winName"></h2>
+    <p class="wsub">wins the game</p>
+    <p class="wscore" id="winScore"></p>
+  </div>
+  <div class="winacts">
+    <button class="primary" id="winNew">New game</button>
+    <button class="ghost" id="winUndo">Undo last deal</button>
+    <button class="ghost" id="winClose">See deals</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  const SU={S:'\u2660\uFE0E',H:'\u2665\uFE0E',D:'\u2666\uFE0E',C:'\u2663\uFE0E'};
+  const RED={H:1,D:1};
+  const PSUIT=['S','D'];
+  const KEY='casino-score-v1';
+  const DEF_NAMES=['Player 1','Player 2'];
+  const CATS=[
+    {k:'cards', label:'Most cards', pts:1, tie:true, note:'27+ cards'},
+    {k:'spades',label:'Most spades',pts:1, note:'7+ spades'},
+    {k:'big',   label:'Big Casino', pts:2, card:['10','D']},
+    {k:'little',label:'Little Casino',pts:1, card:['2','S']}
+  ];
+  const ACES=4;
+
+  const $=id=>document.getElementById(id);
+  const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+  function fresh(){return {names:DEF_NAMES.slice(),target:21,deals:[],firstDealer:0,wins:[0,0],started:false};}
+  function load(){
+    try{
+      const raw=localStorage.getItem(KEY);
+      if(raw){
+        const o=JSON.parse(raw), f=fresh();
+        return {
+          names:Array.isArray(o.names)&&o.names.length===2?o.names:f.names,
+          target:Math.max(1,Math.min(99,+o.target||21)),
+          deals:Array.isArray(o.deals)?o.deals.map(migrate):[],
+          firstDealer:o.firstDealer===1?1:0,
+          wins:Array.isArray(o.wins)&&o.wins.length===2?o.wins.map(n=>+n||0):[0,0],
+          started:typeof o.started==='boolean'?o.started:(Array.isArray(o.deals)&&o.deals.length>0)
+        };
+      }
+    }catch(e){}
+    return fresh();
+  }
+  function migrate(d){
+    if(d&&('aceS' in d)){
+      const k=['aceS','aceH','aceD','aceC'];
+      d.ac0=k.filter(x=>d[x]===0).length; d.ac1=k.filter(x=>d[x]===1).length;
+      k.forEach(x=>delete d[x]);
+    }
+    return d;
+  }
+  function persist(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
+
+  let S=load();
+  const nm=i=>((S.names[i]||'').trim())||DEF_NAMES[i];
+
+  function pts(d){
+    const p=[0,0];
+    for(const c of CATS){const v=d[c.k]; if(v===0||v===1) p[v]+=c.pts;}
+    p[0]+=(d.ac0|0)+(d.sw0|0); p[1]+=(d.ac1|0)+(d.sw1|0);
+    return p;
+  }
+  function totals(){return S.deals.reduce((t,d)=>{const p=pts(d);return [t[0]+p[0],t[1]+p[1]];},[0,0]);}
+  function result(){
+    const t=totals(), m=Math.max(t[0],t[1]);
+    if(m>=S.target){
+      if(t[0]!==t[1]) return {over:true,winner:t[0]>t[1]?0:1,t};
+      return {tie:true,t};
+    }
+    return {t};
+  }
+  const dealer=()=>(S.firstDealer+S.deals.length)%2;
+
+  // two-tap confirm for destructive actions
+  function armed(btn,label,fn){
+    if(btn.dataset.armed){
+      clearTimeout(btn._t); delete btn.dataset.armed; btn.textContent=btn.dataset.orig; fn(); return;
+    }
+    btn.dataset.orig=btn.textContent; btn.dataset.armed='1'; btn.textContent=label;
+    btn._t=setTimeout(()=>{delete btn.dataset.armed; btn.textContent=btn.dataset.orig;},3200);
+  }
+  function disarm(btn){if(btn.dataset.armed){clearTimeout(btn._t);delete btn.dataset.armed;btn.textContent=btn.dataset.orig;}}
+
+  /* ---------- main render ---------- */
+  const cardEls=[...document.querySelectorAll('.pcard')];
+  let rendered=false;
+  function render(){
+    const r=result(), t=r.t;
+    $('targetLabel').textContent=S.target;
+    cardEls.forEach((el,i)=>{
+      el.querySelectorAll('.idx-n').forEach(n=>n.textContent=t[i]);
+      const big=el.querySelector('.big');
+      if(big.textContent!==String(t[i])){
+        big.textContent=t[i];
+        if(rendered){big.classList.remove('pop'); void big.offsetWidth; big.classList.add('pop');}
+      }
+      el.querySelector('.track span').style.width=Math.min(100,t[i]/S.target*100)+'%';
+      el.querySelector('.togo').textContent =
+        r.over ? (r.winner===i?'Winner':'') :
+        t[i]>=S.target ? 'Past the target' : `${S.target-t[i]} to go`;
+      el.classList.toggle('lead',t[i]>t[1-i]);
+      el.classList.toggle('won',!!r.over&&r.winner===i);
+      const inp=el.querySelector('.name');
+      if(document.activeElement!==inp) inp.value=nm(i);
+    });
+    rendered=true;
+
+    const dn=esc(nm(dealer()));
+    $('statusL').innerHTML =
+      r.over ? `<b>${esc(nm(r.winner))}</b> wins ${t[r.winner]}&ndash;${t[1-r.winner]}` :
+      r.tie ? `Tied at ${t[0]}. <b>${dn}</b> deals next` :
+      `<b>${dn}</b> deals next`;
+    $('swapBtn').hidden = S.deals.length>0 || !!r.over;
+    $('winsLbl').textContent=`Games ${S.wins[0]}\u2013${S.wins[1]}`;
+
+    $('c0').textContent=`${SU.S} ${nm(0)}`;
+    $('c1').textContent=`${SU.D} ${nm(1)}`;
+    let run=[0,0];
+    const rows=S.deals.map((d,i)=>{const p=pts(d); run=[run[0]+p[0],run[1]+p[1]]; return {i,p,run:run.slice(),d};}).reverse();
+    const swTxt=n=>n?`<small>${n} sweep${n>1?'s':''}</small>`:'';
+    $('histList').innerHTML=rows.map(o=>
+      `<li><button class="hrow" data-i="${o.i}" aria-label="Edit deal ${o.i+1}">`+
+      `<span class="hn">${o.i+1}</span>`+
+      `<span class="hp">+${o.p[0]}${swTxt(o.d.sw0|0)}</span>`+
+      `<span class="hp">+${o.p[1]}${swTxt(o.d.sw1|0)}</span>`+
+      `<span class="hr">${o.run[0]}&ndash;${o.run[1]}</span></button></li>`).join('');
+    $('empty').hidden=S.deals.length>0;
+    $('cols').hidden=!S.deals.length;
+    $('undoBtn').disabled=!S.deals.length;
+    $('scoreBtn').textContent = r.over ? 'New game' : `Score deal ${S.deals.length+1}`;
+  }
+
+  /* ---------- names ---------- */
+  document.querySelectorAll('.name').forEach(inp=>{
+    const i=+inp.dataset.p;
+    inp.addEventListener('input',()=>{S.names[i]=inp.value; persist(); render();});
+    inp.addEventListener('blur',()=>{if(!inp.value.trim()){S.names[i]=DEF_NAMES[i]; persist();} inp.value=nm(i); render();});
+    inp.addEventListener('keydown',e=>{if(e.key==='Enter') inp.blur();});
+    inp.addEventListener('focus',()=>setTimeout(()=>inp.select(),0));
+  });
+
+  /* ---------- sheets ---------- */
+  let openSheet=null;
+  function show(sheet){
+    openSheet=sheet; sheet.classList.add('open'); sheet.removeAttribute('aria-hidden');
+    $('scrim').classList.add('show'); document.body.classList.add('lock');
+  }
+  function hide(){
+    if(!openSheet) return;
+    openSheet.classList.remove('open'); openSheet.setAttribute('aria-hidden','true');
+    $('scrim').classList.remove('show'); document.body.classList.remove('lock'); openSheet=null;
+  }
+  $('scrim').addEventListener('click',hide);
+  document.querySelectorAll('.sheet').forEach(sheet=>{
+    sheet.setAttribute('aria-hidden','true');
+    const h=sheet.querySelector('.drag'); let y0=null, dy=0;
+    h.addEventListener('touchstart',e=>{y0=e.touches[0].clientY; dy=0; sheet.style.transition='none';},{passive:true});
+    h.addEventListener('touchmove',e=>{if(y0==null)return; dy=Math.max(0,e.touches[0].clientY-y0); sheet.style.transform=`translateY(${dy}px)`;},{passive:true});
+    h.addEventListener('touchend',()=>{sheet.style.transition=''; sheet.style.transform=''; if(dy>90) hide(); y0=null;});
+  });
+
+  /* ---------- deal sheet ---------- */
+  let draft=null, editing=null;
+  const blank=()=>({cards:null,spades:null,big:null,little:null,ac0:null,ac1:null,sw0:0,sw1:0});
+
+  function buildRows(){
+    const chip=c=>c.card?`<span class="mini${RED[c.card[1]]?' red':''}">${c.card[0]}${SU[c.card[1]]}</span>`:'';
+    let html=CATS.map(c=>{
+      const note=`${c.pts} pt${c.pts>1?'s':''}${c.note?` (${c.note})`:''}`;
+      return `<div class="row" data-k="${c.k}">`+
+        `<button class="side s0" data-side="0"><span>+${c.pts}</span></button>`+
+        `<div class="mid"><span class="lbl">${chip(c)}${c.label}</span><span class="pts">${note}</span>`+
+        (c.tie?`<button class="tie" data-side="tie">Tied at 26</button>`:'')+`</div>`+
+        `<button class="side s1" data-side="1"><span>+${c.pts}</span></button></div>`;
+    }).join('');
+    const step=(k,p,what)=>`<div class="step s${p}"><button data-st="${k}${p}" data-d="-1" aria-label="Remove ${what}">&minus;</button>`+
+      `<b id="${k}${p}">0</b><button data-st="${k}${p}" data-d="1" aria-label="Add ${what}">+</button></div>`;
+    const aceChip=`<span class="mini">A<span class="suits">${SU.S}<i class="red">${SU.H}${SU.D}</i>${SU.C}</span></span>`;
+    html+=`<div class="row steprow" id="aceRow">${step('ac',0,'ace')}`+
+      `<div class="mid"><span class="lbl">${aceChip}Aces</span><span class="pts" id="aceNote">1 pt each</span></div>${step('ac',1,'ace')}</div>`;
+    html+=`<div class="row steprow">${step('sw',0,'sweep')}`+
+      `<div class="mid"><span class="lbl">Sweeps</span><span class="pts">1 pt each</span></div>${step('sw',1,'sweep')}</div>`;
+    $('rows').innerHTML=html;
+  }
+
+  function labelSides(){
+    document.querySelectorAll('#rows .row[data-k]').forEach(row=>{
+      const c=CATS.find(x=>x.k===row.dataset.k);
+      const what=c.card?`${c.label} ${c.card[0]}`:c.label;
+      row.querySelectorAll('.side').forEach(b=>b.setAttribute('aria-label',`${nm(+b.dataset.side)} took ${what}`));
+    });
+  }
+
+  function updateSheet(){
+    document.querySelectorAll('#rows .row[data-k]').forEach(row=>{
+      const v=draft[row.dataset.k];
+      row.querySelectorAll('[data-side]').forEach(b=>{
+        const s=b.dataset.side==='tie'?'tie':+b.dataset.side;
+        b.setAttribute('aria-pressed',String(v===s));
+      });
+      row.classList.toggle('decided',v!==null&&v!==undefined);
+    });
+    const acesSet=draft.ac0!=null;
+    $('sw0').textContent=draft.sw0|0; $('sw1').textContent=draft.sw1|0;
+    $('ac0').textContent=acesSet?draft.ac0:'\u2013'; $('ac1').textContent=acesSet?draft.ac1:'\u2013';
+    document.querySelectorAll('[data-st^="sw"][data-d="-1"]').forEach(b=>b.disabled=!(draft[b.dataset.st]|0));
+    document.querySelectorAll('[data-st^="ac"]').forEach(b=>{
+      const v=draft[b.dataset.st];
+      b.disabled=acesSet&&(+b.dataset.d>0?v>=ACES:v<=0);
+    });
+    $('aceNote').textContent=acesSet?'1 pt each':'Set either side';
+    $('aceRow').classList.toggle('pending',!acesSet);
+    const p=pts(draft);
+    $('tally0').textContent='+'+p[0]; $('tally1').textContent='+'+p[1];
+    const left=CATS.filter(c=>draft[c.k]===null||draft[c.k]===undefined).length+(acesSet?0:1);
+    const sb=$('dealSave');
+    sb.disabled=left>0;
+    sb.textContent=left?`${left} left to assign`:(editing===null?'Save deal':'Save changes');
+  }
+
+  function openDeal(i){
+    editing=(i===undefined||i===null)?null:i;
+    draft=editing===null?blank():Object.assign(blank(),S.deals[editing]);
+    $('dealTitle').textContent=`Deal ${(editing===null?S.deals.length:editing)+1}`;
+    const del=$('dealDelete'); disarm(del); del.hidden=editing===null;
+    $('tn0').textContent=nm(0); $('tn1').textContent=nm(1);
+    labelSides(); updateSheet(); $('rows').scrollTop=0;
+    show($('dealSheet'));
+  }
+
+  $('rows').addEventListener('click',e=>{
+    const b=e.target.closest('button'); if(!b) return;
+    if(b.dataset.st){
+      const k=b.dataset.st, d=+b.dataset.d;
+      if(k.startsWith('ac')){
+        const me=+k[2], cur=draft['ac'+me];
+        const v=cur==null?(d>0?1:0):Math.max(0,Math.min(ACES,cur+d));
+        draft['ac'+me]=v; draft['ac'+(1-me)]=ACES-v;
+      } else {
+        draft[k]=Math.max(0,Math.min(12,(draft[k]|0)+d));
+      }
+      updateSheet(); return;
+    }
+    const row=b.closest('.row'); if(!row||!row.dataset.k) return;
+    const v=b.dataset.side==='tie'?'tie':+b.dataset.side;
+    draft[row.dataset.k]=draft[row.dataset.k]===v?null:v;
+    updateSheet();
+  });
+
+  $('dealCancel').addEventListener('click',hide);
+  $('dealSave').addEventListener('click',()=>{
+    if(editing===null) S.deals.push(draft); else S.deals[editing]=draft;
+    persist(); hide(); render();
+    const r=result(); if(r.over) setTimeout(()=>showWin(r),260);
+  });
+  $('dealDelete').addEventListener('click',e=>{
+    armed(e.currentTarget,'Tap to delete',()=>{
+      if(editing!==null){S.deals.splice(editing,1); persist();}
+      hide(); render();
+    });
+  });
+
+  /* ---------- main controls ---------- */
+  $('scoreBtn').addEventListener('click',()=>{
+    const r=result();
+    if(r.over) newGame(); else openDeal(null);
+  });
+  $('histList').addEventListener('click',e=>{
+    const b=e.target.closest('.hrow'); if(b) openDeal(+b.dataset.i);
+  });
+  $('undoBtn').addEventListener('click',e=>{
+    const n=S.deals.length; if(!n) return;
+    armed(e.currentTarget,`Remove deal ${n}?`,()=>{S.deals.pop(); persist(); render();});
+  });
+  $('swapBtn').addEventListener('click',()=>{S.firstDealer=1-S.firstDealer; persist(); render();});
+
+  function newGame(){
+    const r=result();
+    if(r.over) S.wins[r.winner]++;
+    S.firstDealer=(S.firstDealer+S.deals.length)%2;
+    S.deals=[];
+    S.started=false;
+    persist(); hideWin(); hide(); render(); openSetup();
+  }
+
+  /* ---------- new-game setup ---------- */
+  let su=null;
+  const suName=i=>$('n'+i).value.trim()||DEF_NAMES[i];
+  function openSetup(){
+    su={first:S.firstDealer,target:S.target};
+    [0,1].forEach(i=>{const n=nm(i); $('n'+i).value=n===DEF_NAMES[i]?'':n;});
+    renderSetup();
+    $('setup').scrollTop=0; $('setup').classList.add('show'); document.body.classList.add('lock');
+  }
+  function renderSetup(){
+    document.querySelectorAll('#suDealer button').forEach(b=>{
+      const p=+b.dataset.p; b.textContent=suName(p); b.setAttribute('aria-pressed',String(su.first===p));
+    });
+    $('suVal').textContent=su.target;
+    document.querySelectorAll('#suQuick button').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.t===su.target)));
+  }
+  const suTarget=n=>{su.target=Math.max(1,Math.min(99,n)); renderSetup();};
+  $('n0').addEventListener('input',renderSetup);
+  $('n1').addEventListener('input',renderSetup);
+  $('n0').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault(); $('n1').focus();}});
+  $('n1').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault(); $('n1').blur();}});
+  $('suDealer').addEventListener('click',e=>{const b=e.target.closest('button'); if(b){su.first=+b.dataset.p; renderSetup();}});
+  $('suQuick').addEventListener('click',e=>{const b=e.target.closest('button'); if(b) suTarget(+b.dataset.t);});
+  $('suMinus').addEventListener('click',()=>suTarget(su.target-1));
+  $('suPlus').addEventListener('click',()=>suTarget(su.target+1));
+  $('startBtn').addEventListener('click',()=>{
+    const nn=[suName(0),suName(1)], old=[nm(0),nm(1)];
+    const same=(a,b)=>a.toLowerCase()===b.toLowerCase();
+    // games-won record follows the players: keep it for a rematch, swap it if seats swapped, reset for new players
+    if(same(nn[0],old[1])&&same(nn[1],old[0])&&!same(nn[0],nn[1])) S.wins=[S.wins[1],S.wins[0]];
+    else if(!(same(nn[0],old[0])&&same(nn[1],old[1]))) S.wins=[0,0];
+    S.names=nn; S.firstDealer=su.first; S.target=su.target; S.started=true;
+    document.activeElement&&document.activeElement.blur();
+    persist(); $('setup').classList.remove('show'); document.body.classList.remove('lock'); render();
+  });
+
+  /* ---------- win ---------- */
+  function showWin(r){
+    const w=r.winner, t=r.t;
+    const card=$('wincard');
+    card.style.setProperty('--pc',w?'var(--red)':'var(--ink)');
+    $('winName').textContent=nm(w);
+    $('winScore').textContent=`${t[w]}\u2013${t[1-w]}`;
+    $('winIdx1').textContent=$('winIdx2').textContent=t[w];
+    $('winSu1').textContent=$('winSu2').textContent=SU[PSUIT[w]];
+    $('win').classList.add('show');
+  }
+  function hideWin(){$('win').classList.remove('show');}
+  $('winNew').addEventListener('click',newGame);
+  $('winUndo').addEventListener('click',()=>{S.deals.pop(); persist(); hideWin(); render();});
+  $('winClose').addEventListener('click',hideWin);
+
+  /* ---------- settings ---------- */
+  function renderSettings(){
+    $('tVal').textContent=S.target;
+    document.querySelectorAll('#quickTarget button').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.t===S.target)));
+    document.querySelectorAll('#dealerSeg button').forEach(b=>{
+      const p=+b.dataset.p; b.textContent=nm(p); b.setAttribute('aria-pressed',String(S.firstDealer===p));
+    });
+    $('winsDetail').textContent=`${nm(0)} ${S.wins[0]}, ${nm(1)} ${S.wins[1]}`;
+    $('resetWins').disabled=!(S.wins[0]||S.wins[1]);
+    $('newGameSet').disabled=!S.deals.length;
+  }
+  function setTarget(n){S.target=Math.max(1,Math.min(99,n)); persist(); renderSettings(); render();}
+  $('settingsBtn').addEventListener('click',()=>{disarm($('newGameSet')); disarm($('resetWins')); renderSettings(); show($('setSheet'));});
+  $('setDone').addEventListener('click',hide);
+  $('quickTarget').addEventListener('click',e=>{const b=e.target.closest('button'); if(b) setTarget(+b.dataset.t);});
+  $('tMinus').addEventListener('click',()=>setTarget(S.target-1));
+  $('tPlus').addEventListener('click',()=>setTarget(S.target+1));
+  $('dealerSeg').addEventListener('click',e=>{const b=e.target.closest('button'); if(!b) return; S.firstDealer=+b.dataset.p; persist(); renderSettings(); render();});
+  $('resetWins').addEventListener('click',e=>armed(e.currentTarget,'Tap to reset',()=>{S.wins=[0,0]; persist(); renderSettings(); render();}));
+  $('newGameSet').addEventListener('click',e=>{
+    if(result().over){newGame(); return;}
+    armed(e.currentTarget,'Tap again to clear this game',newGame);
+  });
+
+  buildRows();
+  render();
+  if(!S.started) openSetup();
+})();
+</script>
+</body>
+</html>
