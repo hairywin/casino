@@ -1,82 +1,3 @@
-
-Claude finished the response
-Ran 2 commands, read a file
-
-Casino Score
-Artifact·Only you 
-Every game now opens on a "New game" screen where you enter both players' names and pick who deals first and the target score. If you leave a name blank, it shows as "Player 1" or "Player 2."
-
-Rematches: After a win, "New game" brings up this screen with the same names already filled in, so a rematch is one tap on "Start game."
-Games won: The tally follows the players. It carries over for a rematch, flips if the two players switch seats, and resets to 0–0 when different names are entered.
-Renaming mid-game: You can still tap a name on the scoreboard to fix a typo.
-If you still have a test game saved from earlier, the scoreboard will open to that. Tap "Game to 21," then "Start a new game" to get the setup screen.
-
-can i load this code into github to make it publically accessible via a link
-
-Explaining how to host a project on GitHub Pages.
-Explaining how to host a project on GitHub Pages.
-Yes. It's a single self-contained HTML file with no build step, so GitHub Pages will serve it as-is. Two paths depending on how much you want to touch the terminal:
-
-Fastest (browser only)
-
-Create a new public repo, e.g. casino-score.
-Rename the file to index.html and drag it into the repo's upload page. Commit.
-Settings → Pages → Source: "Deploy from a branch," branch main, folder / (root). Save.
-Wait a minute or two. It's live at https://hairywin.github.io/casino-score/.
-Or via CLI, if you'd rather:
-
-bash
-mkdir casino-score && cd casino-score
-# drop the file in as index.html
-git init && git add . && git commit -m "Casino scorekeeper"
-gh repo create casino-score --public --source=. --push
-gh api -X POST repos/hairywin/casino-score/pages -f source[branch]=main -f source[path]=/
-A few things worth knowing before you do:
-
-Name it index.html, or the root URL 404s and you'd have to link the filename directly.
-Scores survive the move but don't transfer. localStorage is per-origin, so a game in progress on the artifact link won't appear on the Pages URL. Everything saved after that persists normally.
-Fonts load from Google Fonts over the network. Fine on the open web, but it means the page needs a connection on first load. If you want it fully offline-capable, I can inline the fonts as base64.
-Add to Home Screen works well here. The meta tags are already in place, so on iPhone it opens full-screen without the Safari chrome.
-One caution: a public repo means the link is guessable and anyone can view the page. That's harmless for a scorekeeper, but if you'd rather it not be indexed, Vercel gives you the same thing from a private repo in about the same number of steps.
-
-Presented file
-Presented file
-Here's the file to download and rename.
-
-
-Casino score
-Code·HTML 
-28 points is always the standard play to
-
-add a score toggle for "last trick" which means who was able to play the last point before the deck was finished. its only worth 1 point
-
-Ran 2 commands, read a file
-Publishing an artifact and tracking its new link.
-
-Casino Score
-Artifact·Only you 
-Both changes are live. The link is now https://claude.ai/artifact/KcabTqgFBZyaXRMhaedvKv.
-
-Last trick is a new toggle row between Little Casino and Aces, worth 1 point. That makes each deal worth 10 points plus sweeps.
-28 is the default target, and it's now a quick chip alongside 11 and 21 on both the setup screen and settings.
-Two things to note. Any game already in progress on your phone keeps whatever target it was saved with, so bump it in settings or start a new game to get 28. And deals you saved before this update have no last-trick value. They keep their original totals, but if you tap one to edit it, you'll have to assign last trick before it will save.
-
-If you already uploaded the earlier file to GitHub, grab this version to replace it.
-
-Presented file
-Presented file
-The updated file is below.
-
-
-Casino score
-Code·HTML 
-
-
-
-Claude is AI and can make mistakes.
-
-
-Casino score · HTML
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -122,7 +43,7 @@ Casino score · HTML
   --lead-shadow:0 1px 0 rgba(255,255,255,.35) inset, 0 22px 40px rgba(0,0,0,.55), 0 4px 8px rgba(0,0,0,.4);
   color-scheme:dark;
 }
- 
+
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 [hidden]{display:none!important}
 html{-webkit-text-size-adjust:100%}
@@ -134,14 +55,14 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 button:disabled{cursor:default}
 button:focus-visible,input:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
 .su{font-style:normal}
- 
+
 /* layout */
 .app{max-width:480px;margin:0 auto;padding:calc(env(safe-area-inset-top) + 14px) 20px calc(env(safe-area-inset-bottom) + 118px)}
 .top{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px}
 h1{font-family:var(--serif);font-weight:700;font-size:34px;line-height:1;margin:0;letter-spacing:.005em}
 .chip{height:38px;padding:0 15px;border-radius:999px;border:1px solid var(--line-felt);background:rgba(0,0,0,.14);font-weight:600;font-size:15px}
 .chip:active{background:rgba(0,0,0,.26)}
- 
+
 /* score cards */
 .board{display:grid;grid-template-columns:1fr 1fr;gap:14px;padding-top:6px}
 .pcard{--pc:var(--ink);position:relative;aspect-ratio:5/7;background:var(--paper);border-radius:14px;box-shadow:var(--card-shadow);
@@ -167,13 +88,13 @@ h1{font-family:var(--serif);font-weight:700;font-size:34px;line-height:1;margin:
 .track{width:78%;height:4px;border-radius:2px;background:color-mix(in srgb,var(--pc) 13%,transparent);overflow:hidden}
 .track span{display:block;height:100%;width:0;background:var(--pc);border-radius:2px;transition:width .5s cubic-bezier(.2,.8,.2,1)}
 .togo{min-height:17px;margin-top:8px;font-size:13.5px;font-weight:500;color:color-mix(in srgb,var(--pc) 72%,var(--paper))}
- 
+
 /* status */
 .status{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:22px 2px 28px;font-size:15px;color:var(--on-felt-2);min-height:32px}
 .status b{color:var(--on-felt);font-weight:700}
 .swap{margin-left:8px;padding:5px 11px;border-radius:999px;border:1px solid var(--line-felt);font-size:13px;font-weight:600;color:var(--on-felt)}
 .wins{white-space:nowrap;font-variant-numeric:tabular-nums}
- 
+
 /* history */
 .hist-head{display:flex;justify-content:space-between;align-items:baseline;padding-bottom:6px}
 .hist-head h2{font-family:var(--serif);font-weight:600;font-size:23px;margin:0}
@@ -191,7 +112,7 @@ h1{font-family:var(--serif);font-weight:700;font-size:34px;line-height:1;margin:
 .hp small{font-size:12px;font-weight:500;color:var(--on-felt-2);margin-left:5px}
 .hr{text-align:right;color:var(--on-felt-2);font-size:15px}
 .empty{color:var(--on-felt-2);font-size:15px;line-height:1.5;padding:14px 0;margin:0;border-top:1px solid var(--line-felt)}
- 
+
 /* dock */
 .dock{position:fixed;left:0;right:0;bottom:0;z-index:10;padding:16px 20px calc(env(safe-area-inset-bottom) + 14px);
   background:linear-gradient(to bottom,transparent,var(--felt-deep) 42%)}
@@ -200,7 +121,7 @@ h1{font-family:var(--serif);font-weight:700;font-size:34px;line-height:1;margin:
   box-shadow:0 1px 0 rgba(255,255,255,.4) inset,0 6px 16px rgba(0,0,0,.28)}
 .primary:active{filter:brightness(.93)}
 .primary:disabled{background:var(--paper-2);color:color-mix(in srgb,var(--ink) 50%,transparent);box-shadow:none}
- 
+
 /* sheets */
 .scrim{position:fixed;inset:0;z-index:20;background:rgba(4,14,10,.5);opacity:0;pointer-events:none;transition:opacity .28s}
 .scrim.show{opacity:1;pointer-events:auto}
@@ -248,7 +169,7 @@ h1{font-family:var(--serif);font-weight:700;font-size:34px;line-height:1;margin:
 #aceRow.pending #aceNote{color:var(--red)}
 .step b{font-family:var(--serif);font-size:24px;font-weight:600;font-variant-numeric:lining-nums}
 .sh-foot{flex:none;padding:12px 16px calc(env(safe-area-inset-bottom) + 12px);border-top:1px solid var(--edge)}
- 
+
 /* settings */
 .set-body{overflow-y:auto;padding:8px 20px 4px}
 .field{padding:14px 0;border-bottom:1px solid color-mix(in srgb,var(--edge) 70%,transparent)}
@@ -266,7 +187,7 @@ h1{font-family:var(--serif);font-weight:700;font-size:34px;line-height:1;margin:
 .wins-row .txt{padding:4px 0}
 .danger-btn{width:100%;height:50px;margin:18px 0 6px;border-radius:14px;border:1.5px solid color-mix(in srgb,var(--red) 55%,transparent);color:var(--red);font-weight:700;font-size:16px}
 .danger-btn:disabled{opacity:.35}
- 
+
 /* win */
 .win{position:fixed;inset:0;z-index:40;display:none;flex-direction:column;align-items:center;justify-content:center;gap:24px;
   padding:calc(env(safe-area-inset-top) + 20px) 24px calc(env(safe-area-inset-bottom) + 20px);background:rgba(5,18,13,.74);-webkit-backdrop-filter:blur(5px);backdrop-filter:blur(5px)}
@@ -282,7 +203,7 @@ h1{font-family:var(--serif);font-weight:700;font-size:34px;line-height:1;margin:
 .winacts{display:flex;flex-direction:column;gap:10px;width:min(86vw,340px)}
 .ghost{height:48px;border-radius:14px;border:1px solid var(--line-felt);color:var(--on-felt);font-weight:600;font-size:16px}
 .ghost:active{background:rgba(255,255,255,.06)}
- 
+
 /* setup */
 .setup{position:fixed;inset:0;z-index:35;display:none;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;
   background-color:var(--felt-deep);background-image:var(--noise),radial-gradient(130% 90% at 50% 8%,var(--felt) 0%,var(--felt-deep) 80%)}
@@ -300,7 +221,7 @@ h1{font-family:var(--serif);font-weight:700;font-size:34px;line-height:1;margin:
 .setup-card .field{position:relative;z-index:1}
 .setup-card .field:last-child{border-bottom:0}
 .setup-card .field:first-of-type{margin-top:8px}
- 
+
 @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -310,7 +231,7 @@ h1{font-family:var(--serif);font-weight:700;font-size:34px;line-height:1;margin:
     <h1>Casino</h1>
     <button class="chip" id="settingsBtn" aria-label="Game settings">Game to <span id="targetLabel">28</span></button>
   </header>
- 
+
   <section class="board" aria-label="Scores">
     <article class="pcard" data-p="0">
       <span class="idx tl" aria-hidden="true"><b class="idx-n">0</b><i class="su">&#x2660;&#xFE0E;</i></span>
@@ -329,12 +250,12 @@ h1{font-family:var(--serif);font-weight:700;font-size:34px;line-height:1;margin:
       <div class="togo"></div>
     </article>
   </section>
- 
+
   <div class="status">
     <span><span id="statusL"></span><button class="swap" id="swapBtn">Swap</button></span>
     <span class="wins" id="winsLbl"></span>
   </div>
- 
+
   <section>
     <div class="hist-head">
       <h2>Deals</h2>
@@ -345,11 +266,11 @@ h1{font-family:var(--serif);font-weight:700;font-size:34px;line-height:1;margin:
     <p class="empty" id="empty">No deals yet. Play through the whole deck, then tap below to score it.</p>
   </section>
 </main>
- 
+
 <div class="dock"><button class="primary" id="scoreBtn">Score deal 1</button></div>
- 
+
 <div class="scrim" id="scrim"></div>
- 
+
 <section class="sheet" id="dealSheet" role="dialog" aria-modal="true" aria-labelledby="dealTitle">
   <div class="drag">
     <div class="grab"></div>
@@ -366,7 +287,7 @@ h1{font-family:var(--serif);font-weight:700;font-size:34px;line-height:1;margin:
   <div class="rows" id="rows"></div>
   <footer class="sh-foot"><button class="primary" id="dealSave" disabled>Save deal</button></footer>
 </section>
- 
+
 <section class="sheet" id="setSheet" role="dialog" aria-modal="true" aria-labelledby="setTitle">
   <div class="drag">
     <div class="grab"></div>
@@ -398,7 +319,7 @@ h1{font-family:var(--serif);font-weight:700;font-size:34px;line-height:1;margin:
   </div>
   <div class="sh-foot" style="border:0;padding-top:0"></div>
 </section>
- 
+
 <div class="setup" id="setup" role="dialog" aria-modal="true" aria-labelledby="setupTitle">
   <div class="setup-in">
     <div class="top" style="margin-bottom:0"><h1>Casino</h1></div>
@@ -423,7 +344,7 @@ h1{font-family:var(--serif);font-weight:700;font-size:34px;line-height:1;margin:
     <button class="primary" id="startBtn">Start game</button>
   </div>
 </div>
- 
+
 <div class="win" id="win" role="dialog" aria-modal="true" aria-labelledby="winName">
   <div class="wincard" id="wincard">
     <span class="idx tl" aria-hidden="true"><b id="winIdx1">0</b><i class="su" id="winSu1"></i></span>
@@ -438,7 +359,7 @@ h1{font-family:var(--serif);font-weight:700;font-size:34px;line-height:1;margin:
     <button class="ghost" id="winClose">See deals</button>
   </div>
 </div>
- 
+
 <script>
 (function(){
   const SU={S:'\u2660\uFE0E',H:'\u2665\uFE0E',D:'\u2666\uFE0E',C:'\u2663\uFE0E'};
@@ -454,10 +375,10 @@ h1{font-family:var(--serif);font-weight:700;font-size:34px;line-height:1;margin:
     {k:'last',  label:'Last trick', pts:1, note:'last capture'}
   ];
   const ACES=4;
- 
+
   const $=id=>document.getElementById(id);
   const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
- 
+
   const DEF_TARGET=28;
   function fresh(){return {names:DEF_NAMES.slice(),target:DEF_TARGET,deals:[],firstDealer:0,wins:[0,0],started:false};}
   function load(){
@@ -486,10 +407,10 @@ h1{font-family:var(--serif);font-weight:700;font-size:34px;line-height:1;margin:
     return d;
   }
   function persist(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
- 
+
   let S=load();
   const nm=i=>((S.names[i]||'').trim())||DEF_NAMES[i];
- 
+
   function pts(d){
     const p=[0,0];
     for(const c of CATS){const v=d[c.k]; if(v===0||v===1) p[v]+=c.pts;}
@@ -506,7 +427,7 @@ h1{font-family:var(--serif);font-weight:700;font-size:34px;line-height:1;margin:
     return {t};
   }
   const dealer=()=>(S.firstDealer+S.deals.length)%2;
- 
+
   // two-tap confirm for destructive actions
   function armed(btn,label,fn){
     if(btn.dataset.armed){
@@ -516,7 +437,7 @@ h1{font-family:var(--serif);font-weight:700;font-size:34px;line-height:1;margin:
     btn._t=setTimeout(()=>{delete btn.dataset.armed; btn.textContent=btn.dataset.orig;},3200);
   }
   function disarm(btn){if(btn.dataset.armed){clearTimeout(btn._t);delete btn.dataset.armed;btn.textContent=btn.dataset.orig;}}
- 
+
   /* ---------- main render ---------- */
   const cardEls=[...document.querySelectorAll('.pcard')];
   let rendered=false;
@@ -540,7 +461,7 @@ h1{font-family:var(--serif);font-weight:700;font-size:34px;line-height:1;margin:
       if(document.activeElement!==inp) inp.value=nm(i);
     });
     rendered=true;
- 
+
     const dn=esc(nm(dealer()));
     $('statusL').innerHTML =
       r.over ? `<b>${esc(nm(r.winner))}</b> wins ${t[r.winner]}&ndash;${t[1-r.winner]}` :
@@ -548,7 +469,7 @@ h1{font-family:var(--serif);font-weight:700;font-size:34px;line-height:1;margin:
       `<b>${dn}</b> deals next`;
     $('swapBtn').hidden = S.deals.length>0 || !!r.over;
     $('winsLbl').textContent=`Games ${S.wins[0]}\u2013${S.wins[1]}`;
- 
+
     $('c0').textContent=`${SU.S} ${nm(0)}`;
     $('c1').textContent=`${SU.D} ${nm(1)}`;
     let run=[0,0];
@@ -565,7 +486,7 @@ h1{font-family:var(--serif);font-weight:700;font-size:34px;line-height:1;margin:
     $('undoBtn').disabled=!S.deals.length;
     $('scoreBtn').textContent = r.over ? 'New game' : `Score deal ${S.deals.length+1}`;
   }
- 
+
   /* ---------- names ---------- */
   document.querySelectorAll('.name').forEach(inp=>{
     const i=+inp.dataset.p;
@@ -574,7 +495,7 @@ h1{font-family:var(--serif);font-weight:700;font-size:34px;line-height:1;margin:
     inp.addEventListener('keydown',e=>{if(e.key==='Enter') inp.blur();});
     inp.addEventListener('focus',()=>setTimeout(()=>inp.select(),0));
   });
- 
+
   /* ---------- sheets ---------- */
   let openSheet=null;
   function show(sheet){
@@ -594,11 +515,11 @@ h1{font-family:var(--serif);font-weight:700;font-size:34px;line-height:1;margin:
     h.addEventListener('touchmove',e=>{if(y0==null)return; dy=Math.max(0,e.touches[0].clientY-y0); sheet.style.transform=`translateY(${dy}px)`;},{passive:true});
     h.addEventListener('touchend',()=>{sheet.style.transition=''; sheet.style.transform=''; if(dy>90) hide(); y0=null;});
   });
- 
+
   /* ---------- deal sheet ---------- */
   let draft=null, editing=null;
   const blank=()=>({cards:null,spades:null,big:null,little:null,last:null,ac0:null,ac1:null,sw0:0,sw1:0});
- 
+
   function buildRows(){
     const chip=c=>c.card?`<span class="mini${RED[c.card[1]]?' red':''}">${c.card[0]}${SU[c.card[1]]}</span>`:'';
     let html=CATS.map(c=>{
@@ -618,7 +539,7 @@ h1{font-family:var(--serif);font-weight:700;font-size:34px;line-height:1;margin:
       `<div class="mid"><span class="lbl">Sweeps</span><span class="pts">1 pt each</span></div>${step('sw',1,'sweep')}</div>`;
     $('rows').innerHTML=html;
   }
- 
+
   function labelSides(){
     document.querySelectorAll('#rows .row[data-k]').forEach(row=>{
       const c=CATS.find(x=>x.k===row.dataset.k);
@@ -626,7 +547,7 @@ h1{font-family:var(--serif);font-weight:700;font-size:34px;line-height:1;margin:
       row.querySelectorAll('.side').forEach(b=>b.setAttribute('aria-label',`${nm(+b.dataset.side)} took ${what}`));
     });
   }
- 
+
   function updateSheet(){
     document.querySelectorAll('#rows .row[data-k]').forEach(row=>{
       const v=draft[row.dataset.k];
@@ -653,7 +574,7 @@ h1{font-family:var(--serif);font-weight:700;font-size:34px;line-height:1;margin:
     sb.disabled=left>0;
     sb.textContent=left?`${left} left to assign`:(editing===null?'Save deal':'Save changes');
   }
- 
+
   function openDeal(i){
     editing=(i===undefined||i===null)?null:i;
     draft=editing===null?blank():Object.assign(blank(),S.deals[editing]);
@@ -663,7 +584,7 @@ h1{font-family:var(--serif);font-weight:700;font-size:34px;line-height:1;margin:
     labelSides(); updateSheet(); $('rows').scrollTop=0;
     show($('dealSheet'));
   }
- 
+
   $('rows').addEventListener('click',e=>{
     const b=e.target.closest('button'); if(!b) return;
     if(b.dataset.st){
@@ -682,7 +603,7 @@ h1{font-family:var(--serif);font-weight:700;font-size:34px;line-height:1;margin:
     draft[row.dataset.k]=draft[row.dataset.k]===v?null:v;
     updateSheet();
   });
- 
+
   $('dealCancel').addEventListener('click',hide);
   $('dealSave').addEventListener('click',()=>{
     if(editing===null) S.deals.push(draft); else S.deals[editing]=draft;
@@ -695,7 +616,7 @@ h1{font-family:var(--serif);font-weight:700;font-size:34px;line-height:1;margin:
       hide(); render();
     });
   });
- 
+
   /* ---------- main controls ---------- */
   $('scoreBtn').addEventListener('click',()=>{
     const r=result();
@@ -709,7 +630,7 @@ h1{font-family:var(--serif);font-weight:700;font-size:34px;line-height:1;margin:
     armed(e.currentTarget,`Remove deal ${n}?`,()=>{S.deals.pop(); persist(); render();});
   });
   $('swapBtn').addEventListener('click',()=>{S.firstDealer=1-S.firstDealer; persist(); render();});
- 
+
   function newGame(){
     const r=result();
     if(r.over) S.wins[r.winner]++;
@@ -718,7 +639,7 @@ h1{font-family:var(--serif);font-weight:700;font-size:34px;line-height:1;margin:
     S.started=false;
     persist(); hideWin(); hide(); render(); openSetup();
   }
- 
+
   /* ---------- new-game setup ---------- */
   let su=null;
   const suName=i=>$('n'+i).value.trim()||DEF_NAMES[i];
@@ -754,7 +675,7 @@ h1{font-family:var(--serif);font-weight:700;font-size:34px;line-height:1;margin:
     document.activeElement&&document.activeElement.blur();
     persist(); $('setup').classList.remove('show'); document.body.classList.remove('lock'); render();
   });
- 
+
   /* ---------- win ---------- */
   function showWin(r){
     const w=r.winner, t=r.t;
@@ -770,7 +691,7 @@ h1{font-family:var(--serif);font-weight:700;font-size:34px;line-height:1;margin:
   $('winNew').addEventListener('click',newGame);
   $('winUndo').addEventListener('click',()=>{S.deals.pop(); persist(); hideWin(); render();});
   $('winClose').addEventListener('click',hideWin);
- 
+
   /* ---------- settings ---------- */
   function renderSettings(){
     $('tVal').textContent=S.target;
@@ -794,7 +715,7 @@ h1{font-family:var(--serif);font-weight:700;font-size:34px;line-height:1;margin:
     if(result().over){newGame(); return;}
     armed(e.currentTarget,'Tap again to clear this game',newGame);
   });
- 
+
   buildRows();
   render();
   if(!S.started) openSetup();
@@ -802,4 +723,3 @@ h1{font-family:var(--serif);font-weight:700;font-size:34px;line-height:1;margin:
 </script>
 </body>
 </html>
- 
